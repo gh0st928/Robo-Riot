@@ -17,12 +17,11 @@ MonoBehaviour:
   debugColor: {r: 1, g: 1, b: 1, a: 1}
   faction: 1
   maxHealth: 5
-  maxActionPoints: 2
+  maxActionPoints: 1
   moveRange: 4
   initiative: 5
-  attackDamage: 3
-  attackRange: 5
+  attackDamage: 4
+  attackRange: 6
   defense: 0
   accuracy: 80
-  abilities:
-  - {fileID: 11400000, guid: 698c621b8309e504db4094fdaf490aa4, type: 2}
+  abilities: []

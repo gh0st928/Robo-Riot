@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 namespace RoboRiot.Controls
 {
@@ -65,10 +66,14 @@ namespace RoboRiot.Controls
         // ---------------------------------------------------------------
         // Mouse clicks
         // ---------------------------------------------------------------
-        private void HandleMouseClick()
+       private void HandleMouseClick()
         {
             if (Mouse.current == null) return;
             if (!Mouse.current.leftButton.wasPressedThisFrame) return;
+
+            // Block click if mouse is over a UI element
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                return;
 
             Vector2 screenPos = Mouse.current.position.ReadValue();
             Vector3 worldPos  = _cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));

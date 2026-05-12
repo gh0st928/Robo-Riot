@@ -216,6 +216,10 @@ MonoBehaviour:
     spawnCell: {x: 6, y: 6}
   - prefab: {fileID: 3432633889031350579, guid: b97a7e99aa8533b458d2e5a373c8584e, type: 3}
     spawnCell: {x: 6, y: 6}
+  - prefab: {fileID: 3432633889031350579, guid: b97a7e99aa8533b458d2e5a373c8584e, type: 3}
+    spawnCell: {x: 6, y: 6}
+  - prefab: {fileID: 3432633889031350579, guid: b97a7e99aa8533b458d2e5a373c8584e, type: 3}
+    spawnCell: {x: 6, y: 6}
 --- !u!4 &423224056
 Transform:
   m_ObjectHideFlags: 0
@@ -460,7 +464,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bebd2af270e681a49989b107000ea011, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoboRiot.Controls.CameraController
-  dragSpeed: 5
   edgeScrolling: 1
   edgeScrollSpeed: 15
   edgeThreshold: 20
@@ -1297,8 +1300,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 850068b848e854946b1603ecb4f6b5f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GridManager
-  width: 15
-  height: 15
+  width: 20
+  height: 20
   cellSize: 1
   originPosition: {x: -6, y: -3}
   defaultTileData: {fileID: 11400000, guid: c0db6029a3e7cc24b88ca95966af2d6f, type: 2}

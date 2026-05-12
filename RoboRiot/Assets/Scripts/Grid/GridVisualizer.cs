@@ -94,7 +94,7 @@ namespace RoboRiot.Grid
         // ---------------------------------------------------------------
         // Gizmos (Scene view)
         // ---------------------------------------------------------------
-
+#if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             if (!drawGizmos) return;
@@ -129,7 +129,7 @@ namespace RoboRiot.Grid
                     );
             }
         }
-
+#endif
 
         // ---------------------------------------------------------------
         // Helper
