@@ -23,7 +23,7 @@ namespace RoboRiot.Units
         protected override void Start()
         {
             base.Start();
-            _playerUnit = FindObjectOfType<PlayerUnit>();
+            _playerUnit = FindFirstObjectByType<PlayerUnit>();
         }
 
         // ---------------------------------------------------------------

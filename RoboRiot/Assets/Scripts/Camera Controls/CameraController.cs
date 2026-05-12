@@ -13,7 +13,6 @@ namespace RoboRiot.Controls
     public class CameraController : MonoBehaviour
     {
         [Header("Pan Settings")]
-        [SerializeField] private float dragSpeed       = 5f;
         [SerializeField] private bool  edgeScrolling   = false;
         [SerializeField] private float edgeScrollSpeed = 5f;
         [SerializeField] private float edgeThreshold   = 20f;

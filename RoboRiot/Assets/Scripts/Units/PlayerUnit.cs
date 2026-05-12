@@ -25,7 +25,8 @@ namespace RoboRiot.Units
         // ---------------------------------------------------------------
         protected override void Awake() => base.Awake();
 
-        private void Start()
+        protected override void Start()
+
         {
             base.Start();
             SubscribeToInput();
@@ -198,7 +199,7 @@ namespace RoboRiot.Units
             if (GridManager.Instance == null || CurrentCell == null) return;
             _reachableCells = GridManager.Instance.GetCellsInRange(CurrentCell, MoveRange, walkableOnly: true);
 
-            var vis = FindObjectOfType<GridVisualizer>();
+            var vis = FindFirstObjectByType<GridVisualizer>();
             if (vis == null) return;
             foreach (var cell in _reachableCells)
                 vis.SetHighlight(cell.X, cell.Y, new Color(0.2f, 0.6f, 1f, 0.5f));
@@ -206,7 +207,7 @@ namespace RoboRiot.Units
 
         private void ClearReachableHighlights()
         {
-            FindObjectOfType<GridVisualizer>()?.ClearHighlights();
+            FindFirstObjectByType<GridVisualizer>()?.ClearHighlights();
             _reachableCells.Clear();
         }
     }

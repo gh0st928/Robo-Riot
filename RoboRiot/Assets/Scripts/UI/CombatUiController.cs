@@ -71,7 +71,7 @@ namespace RoboRiot.UI
         {
             yield return null;
 
-            _player = FindObjectOfType<PlayerUnit>();
+            _player = FindFirstObjectByType<PlayerUnit>();
 
             if (_player != null)
             {
@@ -271,7 +271,7 @@ namespace RoboRiot.UI
                 Destroy(child.gameObject);
 
             // Get all living units sorted by initiative
-            var units = FindObjectsOfType<Unit>();
+            var units = FindObjectsByType<Unit>(FindObjectsSortMode.None);
             System.Array.Sort(units, (a, b) => b.Initiative.CompareTo(a.Initiative));
 
             foreach (var unit in units)

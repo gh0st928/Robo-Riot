@@ -96,7 +96,7 @@ namespace RoboRiot.Combat
         private void BuildTurnQueue()
         {
             // Find all active units in the scene
-            var allUnits = FindObjectsOfType<Unit>()
+            var allUnits = FindObjectsByType<Unit>(FindObjectsSortMode.None)
                 .Where(u => u.IsAlive && u.gameObject.activeInHierarchy)
                 .OrderByDescending(u => u.Initiative)   // Highest initiative first
                 .ToList();

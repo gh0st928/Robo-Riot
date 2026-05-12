@@ -101,7 +101,7 @@ namespace RoboRiot.Controls
             var sr = GetDebugSprite(cell);
             if (sr == null) return;
 
-            var vis = FindObjectOfType<GridVisualizer>();
+            var vis = FindFirstObjectByType<GridVisualizer>();
             if (vis != null) sr.color = vis.TileColor(cell.Type);
         }
 
