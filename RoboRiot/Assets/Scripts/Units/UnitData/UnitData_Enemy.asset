@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2654ad99a93b9854cafe641a646084e9, type: 3}
+  m_Name: UnitData_Enemy
+  m_EditorClassIdentifier: Assembly-CSharp::RoboRiot.Units.UnitData
+  unitName: Unit
+  portrait: {fileID: 0}
+  debugColor: {r: 1, g: 1, b: 1, a: 1}
+  faction: 1
+  maxHealth: 10
+  maxActionPoints: 2
+  moveRange: 4
+  initiative: 5
+  attackDamage: 3
+  attackRange: 5
+  defense: 0
+  accuracy: 80
+  abilities:
+  - {fileID: 11400000, guid: 698c621b8309e504db4094fdaf490aa4, type: 2}
