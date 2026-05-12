@@ -64,31 +64,35 @@ namespace RoboRiot.Grid
         // ---------------------------------------------------------------
         private void BuildGrid()
         {
-            // Create a container to keep the hierarchy tidy
+            // Centre the grid on the camera
+            Vector3 camPos = Camera.main.transform.position;
+            originPosition = new Vector2(
+            camPos.x - (width  * cellSize) / 2f,
+            camPos.y - (height * cellSize) / 2f
+            );
+
             _cellContainer = new GameObject("--- Cells ---").transform;
             _cellContainer.SetParent(transform);
 
             _grid = new GridCell[width, height];
 
             for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-            {
-                Vector3 worldPos = GridToWorld(x, y);
+                for (int y = 0; y < height; y++)
+                {
+                    Vector3 worldPos = GridToWorld(x, y);
+                    GameObject cellObj = new GameObject($"Cell ({x},{y})");
+                    cellObj.transform.SetParent(_cellContainer);
+                    cellObj.transform.position = worldPos;
 
-                // Create a new GameObject for this cell
-                GameObject cellObj = new GameObject($"Cell ({x},{y})");
-                cellObj.transform.SetParent(_cellContainer);
-                cellObj.transform.position = worldPos;
+                    GridCell cell = cellObj.AddComponent<GridCell>();
+                    cell.Initialise(x, y, defaultTileData);
+                    _grid[x, y] = cell;
+                }
 
-                // Attach GridCell component and initialise it
-                GridCell cell = cellObj.AddComponent<GridCell>();
-                cell.Initialise(x, y, defaultTileData);
+            Debug.Log($"[GridManager] Built {width}x{height} grid.");
+        }     
 
-                _grid[x, y] = cell;
-            }
 
-            Debug.Log($"[GridManager] Built {width}x{height} grid ({width * height} cells).");
-        }
 
         // ---------------------------------------------------------------
         // Coordinate conversion
