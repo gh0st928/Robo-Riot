@@ -129,5 +129,12 @@ namespace RoboRiot.Controls
         // ---------------------------------------------------------------
         public void LockInput()   => _inputLocked = true;
         public void UnlockInput() => _inputLocked = false;
+        public void SimulateAbilitySelect(int slotIndex)
+        {
+            if (_inputLocked) return;
+            OnAbilitySelected.Invoke(slotIndex);
+        }
     }
+
+    
 }

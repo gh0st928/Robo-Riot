@@ -110,5 +110,6 @@ namespace RoboRiot.Controls
             GameObject found = GameObject.Find($"Sprite ({cell.X},{cell.Y})");
             return found != null ? found.GetComponent<SpriteRenderer>() : null;
         }
+
     }
 }
