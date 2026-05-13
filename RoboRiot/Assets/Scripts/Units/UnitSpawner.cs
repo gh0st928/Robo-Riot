@@ -9,17 +9,8 @@ namespace RoboRiot.Units
 {
     /// <summary>
     /// Spawns player and enemy units onto the grid at mission start.
-    ///
-    /// Two modes:
-    ///  - Manual: set spawn coordinates directly in the Inspector
-    ///  - Tilemap: paint spawn tiles on Tilemap_Spawns and let this
-    ///    script read them automatically
-    ///
-    /// Setup:
-    ///  1. Create an empty GameObject, name it "UnitSpawner"
-    ///  2. Attach this script
-    ///  3. Choose a spawn mode in the Inspector
-    ///  4. Assign prefabs and spawn data accordingly
+    /// Player spawns in the bottom left area.
+    /// Enemies spawn randomly in the top right area, guaranteed walkable.
     /// </summary>
     public class UnitSpawner : MonoBehaviour
     {
@@ -27,9 +18,9 @@ namespace RoboRiot.Units
         // Inspector
         // ---------------------------------------------------------------
         [Header("Spawn Mode")]
-        [SerializeField] private SpawnMode spawnMode = SpawnMode.Manual;
+        [SerializeField] private SpawnMode spawnMode = SpawnMode.Auto;
 
-        [Header("Tilemap Mode — assign Tilemap_Spawns layer")]
+        [Header("Tilemap Mode")]
         [SerializeField] private Tilemap spawnTilemap;
 
         [Header("Player")]
@@ -38,6 +29,14 @@ namespace RoboRiot.Units
 
         [Header("Enemies")]
         [SerializeField] private List<EnemySpawnEntry> enemySpawns = new();
+
+        [Header("Auto Spawn Settings")]
+        [Tooltip("How far into the enemy corner to look for spawn cells")]
+        [SerializeField] private int enemySpawnAreaSize = 4;
+        [Tooltip("Minimum distance between enemy spawns")]
+        [SerializeField] private int minEnemySpacing    = 2;
+        [Tooltip("Minimum distance from player spawn")]
+        [SerializeField] private int minDistFromPlayer  = 5;
 
         // ---------------------------------------------------------------
         // Public references
@@ -54,18 +53,109 @@ namespace RoboRiot.Units
         }
 
         // ---------------------------------------------------------------
-        // Main spawn logic
+        // Main spawn
         // ---------------------------------------------------------------
         public void SpawnAll()
         {
-            if (spawnMode == SpawnMode.Tilemap)
-                SpawnFromTilemap();
-            else
-                SpawnManual();
+            switch (spawnMode)
+            {
+                case SpawnMode.Auto:    SpawnAuto();    break;
+                case SpawnMode.Manual:  SpawnManual();  break;
+                case SpawnMode.Tilemap: SpawnFromTilemap(); break;
+            }
         }
 
         // ---------------------------------------------------------------
-        // Mode A: Manual spawn from Inspector coordinates
+        // Mode A: Auto — player bottom left, enemies random top right
+        // ---------------------------------------------------------------
+        private void SpawnAuto()
+        {
+            var gm = GridManager.Instance;
+            if (gm == null) return;
+
+            // --- Spawn player in bottom left ---
+            GridCell playerCell = FindWalkableCellInArea(
+                wallPad, wallPad,
+                wallPad + enemySpawnAreaSize, wallPad + enemySpawnAreaSize,
+                new List<GridCell>()
+            );
+
+            SpawnPlayer(playerCell);
+
+            // --- Spawn enemies in top right ---
+            int startX = gm.Width  - wallPad - enemySpawnAreaSize - 1;
+            int startY = gm.Height - wallPad - enemySpawnAreaSize - 1;
+            int endX   = gm.Width  - wallPad - 1;
+            int endY   = gm.Height - wallPad - 1;
+
+            List<GridCell> usedCells = playerCell != null ? new List<GridCell> { playerCell } : new();
+
+            foreach (var entry in enemySpawns)
+            {
+                if (entry.prefab == null) continue;
+
+                GridCell cell = FindWalkableCellInArea(startX, startY, endX, endY, usedCells);
+                if (cell == null)
+                {
+                    Debug.LogWarning("[UnitSpawner] Could not find valid enemy spawn cell.");
+                    continue;
+                }
+
+                usedCells.Add(cell);
+                SpawnEnemy(entry.prefab, cell);
+            }
+        }
+
+        // Border padding to avoid spawning right next to walls
+        private int wallPad => 1;
+
+        /// <summary>
+        /// Finds a random walkable unoccupied cell within a rectangular area
+        /// that is far enough from already used cells.
+        /// </summary>
+        private GridCell FindWalkableCellInArea(int x0, int y0, int x1, int y1, List<GridCell> usedCells)
+        {
+            var gm = GridManager.Instance;
+            if (gm == null) return null;
+
+            // Gather all valid candidates in the area
+            List<GridCell> candidates = new();
+
+            for (int x = x0; x <= x1; x++)
+            for (int y = y0; y <= y1; y++)
+            {
+                GridCell cell = gm.GetCell(x, y);
+                if (cell == null || !cell.IsWalkable || cell.IsOccupied) continue;
+
+                // Check spacing from already used cells
+                bool tooClose = usedCells.Any(used =>
+                    Mathf.Abs(used.X - cell.X) + Mathf.Abs(used.Y - cell.Y) < minEnemySpacing
+                );
+                if (tooClose) continue;
+
+                candidates.Add(cell);
+            }
+
+            if (candidates.Count == 0)
+            {
+                // Fallback — try anywhere walkable in the area ignoring spacing
+                for (int x = x0; x <= x1; x++)
+                for (int y = y0; y <= y1; y++)
+                {
+                    GridCell cell = gm.GetCell(x, y);
+                    if (cell != null && cell.IsWalkable && !cell.IsOccupied)
+                        candidates.Add(cell);
+                }
+            }
+
+            if (candidates.Count == 0) return null;
+
+            // Pick a random candidate
+            return candidates[Random.Range(0, candidates.Count)];
+        }
+
+        // ---------------------------------------------------------------
+        // Mode B: Manual — use Inspector coordinates
         // ---------------------------------------------------------------
         private void SpawnManual()
         {
@@ -74,36 +164,31 @@ namespace RoboRiot.Units
             foreach (var entry in enemySpawns)
             {
                 if (entry.prefab == null) continue;
-                GridCell cell = GetOrFindCell(entry.spawnCell);
-                SpawnEnemy(entry.prefab, cell);
+                SpawnEnemy(entry.prefab, GetOrFindCell(entry.spawnCell));
             }
         }
 
         // ---------------------------------------------------------------
-        // Mode B: Read spawn positions from Tilemap_Spawns layer
+        // Mode C: Tilemap — read from Tilemap_Spawns layer
         // ---------------------------------------------------------------
         private void SpawnFromTilemap()
         {
             if (spawnTilemap == null)
             {
-                Debug.LogError("[UnitSpawner] Tilemap mode selected but no spawn tilemap assigned. Falling back to manual.");
-                SpawnManual();
+                Debug.LogWarning("[UnitSpawner] No spawn tilemap assigned. Falling back to auto.");
+                SpawnAuto();
                 return;
             }
 
             spawnTilemap.CompressBounds();
             BoundsInt bounds = spawnTilemap.cellBounds;
-
-            // Collect all painted spawn positions
             List<GridCell> spawnCells = new();
 
             foreach (var pos in bounds.allPositionsWithin)
             {
                 if (!spawnTilemap.HasTile(pos)) continue;
-
                 int gx = pos.x - bounds.xMin;
                 int gy = pos.y - bounds.yMin;
-
                 GridCell cell = GridManager.Instance?.GetCell(gx, gy);
                 if (cell != null && cell.IsWalkable)
                     spawnCells.Add(cell);
@@ -111,22 +196,18 @@ namespace RoboRiot.Units
 
             if (spawnCells.Count == 0)
             {
-                Debug.LogWarning("[UnitSpawner] No spawn tiles found on tilemap. Falling back to manual.");
-                SpawnManual();
+                Debug.LogWarning("[UnitSpawner] No spawn tiles found. Falling back to auto.");
+                SpawnAuto();
                 return;
             }
 
-            // First spawn tile = player, rest = enemies (in order painted)
             SpawnPlayer(spawnCells[0]);
-
             for (int i = 1; i < spawnCells.Count; i++)
             {
                 if (i - 1 >= enemySpawns.Count) break;
                 if (enemySpawns[i - 1].prefab == null) continue;
                 SpawnEnemy(enemySpawns[i - 1].prefab, spawnCells[i]);
             }
-
-            Debug.Log($"[UnitSpawner] Spawned from tilemap. {spawnCells.Count} spawn points found.");
         }
 
         // ---------------------------------------------------------------
@@ -134,18 +215,13 @@ namespace RoboRiot.Units
         // ---------------------------------------------------------------
         private void SpawnPlayer(GridCell cell)
         {
-            if (playerPrefab == null) { Debug.LogError("[UnitSpawner] No player prefab assigned."); return; }
-            if (cell == null)         { Debug.LogError("[UnitSpawner] No valid spawn cell for player."); return; }
+            if (playerPrefab == null) { Debug.LogError("[UnitSpawner] No player prefab."); return; }
+            if (cell == null)         { Debug.LogError("[UnitSpawner] No valid player spawn cell."); return; }
 
             GameObject obj = Instantiate(playerPrefab);
             SpawnedPlayer = obj.GetComponent<PlayerUnit>();
 
-            if (SpawnedPlayer == null)
-            {
-                Debug.LogError("[UnitSpawner] Player prefab is missing a PlayerUnit component.");
-                Destroy(obj);
-                return;
-            }
+            if (SpawnedPlayer == null) { Debug.LogError("[UnitSpawner] PlayerUnit component missing."); Destroy(obj); return; }
 
             SpawnedPlayer.PlaceOnCell(cell);
             Debug.Log($"[UnitSpawner] Player spawned at {cell}.");
@@ -153,17 +229,12 @@ namespace RoboRiot.Units
 
         private void SpawnEnemy(GameObject prefab, GridCell cell)
         {
-            if (cell == null) { Debug.LogWarning("[UnitSpawner] No valid spawn cell for enemy. Skipping."); return; }
+            if (cell == null) { Debug.LogWarning("[UnitSpawner] No valid enemy spawn cell. Skipping."); return; }
 
             GameObject obj   = Instantiate(prefab);
             EnemyUnit  enemy = obj.GetComponent<EnemyUnit>();
 
-            if (enemy == null)
-            {
-                Debug.LogError("[UnitSpawner] Enemy prefab is missing an EnemyUnit component.");
-                Destroy(obj);
-                return;
-            }
+            if (enemy == null) { Debug.LogError("[UnitSpawner] EnemyUnit component missing."); Destroy(obj); return; }
 
             enemy.PlaceOnCell(cell);
             SpawnedEnemies.Add(enemy);
@@ -176,13 +247,11 @@ namespace RoboRiot.Units
         private GridCell GetOrFindCell(Vector2Int coord)
         {
             GridCell cell = GridManager.Instance?.GetCell(coord.x, coord.y);
-
             if (cell == null || !cell.IsWalkable || cell.IsOccupied)
             {
-                Debug.LogWarning($"[UnitSpawner] Cell {coord} unavailable. Searching for nearest walkable...");
+                Debug.LogWarning($"[UnitSpawner] Cell {coord} unavailable. Finding nearest...");
                 cell = FindNearestWalkable(coord);
             }
-
             return cell;
         }
 
@@ -194,8 +263,7 @@ namespace RoboRiot.Units
             {
                 if (Mathf.Abs(dx) != radius && Mathf.Abs(dy) != radius) continue;
                 GridCell cell = GridManager.Instance?.GetCell(origin.x + dx, origin.y + dy);
-                if (cell != null && cell.IsWalkable && !cell.IsOccupied)
-                    return cell;
+                if (cell != null && cell.IsWalkable && !cell.IsOccupied) return cell;
             }
             return null;
         }
@@ -204,11 +272,7 @@ namespace RoboRiot.Units
     // ---------------------------------------------------------------
     // Supporting types
     // ---------------------------------------------------------------
-    public enum SpawnMode
-    {
-        Manual,    // Set spawn coordinates in Inspector
-        Tilemap    // Read from Tilemap_Spawns layer
-    }
+    public enum SpawnMode { Auto, Manual, Tilemap }
 
     [System.Serializable]
     public class EnemySpawnEntry

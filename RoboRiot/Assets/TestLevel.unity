@@ -932,19 +932,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6071699fffca7f442af8c6df7be45155, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoboRiot.Units.UnitSpawner
-  spawnMode: 1
+  spawnMode: 0
   spawnTilemap: {fileID: 1145113586}
   playerPrefab: {fileID: 5585652086727610118, guid: 0474daab51bcf5a44a82858c7f11920b, type: 3}
   playerSpawnCell: {x: 1, y: 1}
   enemySpawns:
   - prefab: {fileID: 3432633889031350579, guid: b97a7e99aa8533b458d2e5a373c8584e, type: 3}
-    spawnCell: {x: 6, y: 6}
+    spawnCell: {x: 10, y: 6}
   - prefab: {fileID: 3432633889031350579, guid: b97a7e99aa8533b458d2e5a373c8584e, type: 3}
-    spawnCell: {x: 6, y: 6}
+    spawnCell: {x: 7, y: 8}
   - prefab: {fileID: 3432633889031350579, guid: b97a7e99aa8533b458d2e5a373c8584e, type: 3}
-    spawnCell: {x: 6, y: 6}
+    spawnCell: {x: 9, y: 9}
   - prefab: {fileID: 3432633889031350579, guid: b97a7e99aa8533b458d2e5a373c8584e, type: 3}
-    spawnCell: {x: 6, y: 6}
+    spawnCell: {x: 12, y: 13}
+  enemySpawnAreaSize: 4
+  minEnemySpacing: 2
+  minDistFromPlayer: 8
 --- !u!4 &423224056
 Transform:
   m_ObjectHideFlags: 0
@@ -1198,8 +1201,8 @@ MonoBehaviour:
   clampToBounds: 1
   minX: -4
   maxX: 4
-  minY: -6
-  maxY: 6
+  minY: -7
+  maxY: 7
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
