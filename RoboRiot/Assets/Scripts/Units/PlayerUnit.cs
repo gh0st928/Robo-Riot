@@ -3,6 +3,7 @@ using UnityEngine;
 using RoboRiot.Grid;
 using RoboRiot.Controls;
 using RoboRiot.Combat;
+using RoboRiot.UI;
 
 namespace RoboRiot.Units
 {
@@ -36,7 +37,12 @@ namespace RoboRiot.Units
 
         private void SubscribeToInput()
         {
-            if (InputHandler.Instance == null) return;
+            if (InputHandler.Instance == null)
+            {
+                Debug.LogError("[PlayerUnit] InputHandler not found!");
+                return;
+            }
+            Debug.Log("[PlayerUnit] Successfully subscribed to InputHandler.");
             InputHandler.Instance.OnWorldClicked.AddListener(OnWorldClicked);
             InputHandler.Instance.OnAbilitySelected.AddListener(OnAbilityKeyPressed);
             InputHandler.Instance.OnEndTurn.AddListener(OnEndTurnPressed);
@@ -105,7 +111,11 @@ namespace RoboRiot.Units
             if (Abilities[slotIndex] == null) return;
 
             _selectedAbility = slotIndex;
-            Debug.Log($"[PlayerUnit] Selected: {Abilities[slotIndex].abilityName} — click a target.");
+
+            // Tell the UI to highlight the selected slot
+            FindFirstObjectByType<CombatUIController>()?.SetSelectedSlot(slotIndex);
+
+            Debug.Log($"[PlayerUnit] Selected ability: {Abilities[slotIndex].abilityName}");
         }
 
         private void OnEndTurnPressed()
@@ -118,6 +128,9 @@ namespace RoboRiot.Units
         {
             if (!_isMyTurn) return;
             _selectedAbility = -1;
+            FindFirstObjectByType<CombatUIController>()?.ClearSelectedSlot();
+            ClearReachableHighlights();
+            HighlightReachableCells();
             Debug.Log("[PlayerUnit] Selection cancelled.");
         }
 

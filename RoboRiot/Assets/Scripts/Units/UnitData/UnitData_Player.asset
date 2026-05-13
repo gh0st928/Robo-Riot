@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::RoboRiot.Units.UnitData
   unitName: Unit
   portrait: {fileID: 0}
-  debugColor: {r: 1, g: 1, b: 1, a: 1}
+  debugColor: {r: 0.29424706, g: 0.83396226, b: 0.8328654, a: 1}
   faction: 0
   maxHealth: 20
   maxActionPoints: 2
   moveRange: 5
-  initiative: 3
+  initiative: 7
   attackDamage: 3
   attackRange: 8
   defense: 0

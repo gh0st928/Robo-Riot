@@ -31,10 +31,11 @@ namespace RoboRiot.UI
 
         [Header("Player Panel")]
         [SerializeField] private TextMeshProUGUI unitNameLabel;
-        [SerializeField] private Image           healthBarFill;
+        //[SerializeField] private Image           healthBarFill;
         [SerializeField] private TextMeshProUGUI healthText;
-        [SerializeField] private Transform       apPipsContainer;
-        [SerializeField] private GameObject      apPipPrefab;
+        //[SerializeField] private Transform       apPipsContainer;
+        //[SerializeField] private GameObject      apPipPrefab;
+        [SerializeField] private TextMeshProUGUI apText;
 
         [Header("Ability Bar")]
         [SerializeField] private Transform  abilitySlotsContainer;
@@ -114,19 +115,22 @@ namespace RoboRiot.UI
                 unitNameLabel.text = _player.UnitName.ToUpper();
 
             UpdateHealthBar(_player.CurrentHealth, _player.MaxHealth);
-            BuildAPPips(_player.MaxActionPoints);
-            UpdateAPPips(_player.CurrentActionPoints);
+            UpdateAPText(_player.CurrentActionPoints, _player.MaxActionPoints);
+
+            //BuildAPPips(_player.MaxActionPoints);
+            //UpdateAPPips(_player.CurrentActionPoints);
         }
 
         private void UpdateHealthBar(int current, int max)
         {
+            /*
             if (healthBarFill != null)
                 healthBarFill.fillAmount = max > 0 ? (float)current / max : 0f;
-
+            */
             if (healthText != null)
                 healthText.text = $"{current}/{max}";
         }
-
+/*
         private void BuildAPPips(int maxAP)
         {
             if (apPipsContainer == null) return;
@@ -153,13 +157,19 @@ namespace RoboRiot.UI
                 i++;
             }
         }
-
+*/
+        private void UpdateAPText(int current, int max)
+        {
+            if (apText != null)
+                apText.text = $"{current}/{max}";
+        }
         private void OnHealthChanged(int current, int max)
             => UpdateHealthBar(current, max);
 
         private void OnAPChanged(int current, int max)
         {
-            UpdateAPPips(current);
+            //UpdateAPPips(current);
+            UpdateAPText(current, max);
             RefreshAbilityAPState(current);
         }
 
@@ -233,9 +243,11 @@ namespace RoboRiot.UI
 
         private void RefreshAbilitySelection()
         {
+            Debug.Log($"[CombatUI] Refreshing selection. Selected slot: {_selectedSlot}, Total slots: {_spawnedSlots.Count}");
             for (int i = 0; i < _spawnedSlots.Count; i++)
             {
                 var img = _spawnedSlots[i].GetComponent<Image>();
+                Debug.Log($"[CombatUI] Slot {i} image: {img != null}");
                 if (img != null)
                     img.color = i == _selectedSlot ? colorSelected : colorNormal;
             }
